@@ -196,7 +196,7 @@
                 key = (func) ? func : function(x) { return x; };
             return me.map(obj, function(x, y, z) {
                 var item = key(x);
-                if(index.indexOf(item) == -1) { // index of means only distinct check ints/strings
+                if(index.indexOf(item) == -1) {
                     index.push(item);
                     return (isArray) ? x : { key: y, value: x };
                 } else
@@ -276,7 +276,9 @@
             /// <summary>Attempts to format the params passed in given a type property within params.</summary>
             /// <param type="Object" name="params">Object parameters passed in, see i.formatOptions for full view of replaceable params.</param>
             /// <returns type="String">Formatted value.</returns>
-            var options = __.flow(params).def().update(me.i.formatOptions()).value(); // Types: N, S
+            var options = me.i.formatOptions();
+            if(__.is.object(params))
+                me.fuse(options, params);
             var temp = me.formats[options.type.toLowerCase()];
             var retVal = '';
             if (__.is.function(temp)) 
@@ -325,10 +327,11 @@
                 value = null;
             me.all(obj, function (v) {
                 value = key(v);
-                if (me.flow(value).set().eval(function (x) { return me.is.string(x.value) || me.is.number(x.value); }).result) {
-                    me.flow(retVal[value]).set()
-                    .isTrue(function () { retVal[value].push(v); })
-                    .isFalse(function () { retVal[value] = [v]; });
+                if(me.is.string(value) || me.is.number(value)) {
+                    if(me.is.set(retVal[value]))
+                        retVal[value].push(v);
+                    else
+                        retVal[value] = [v];
                 }
             });
             return retVal;
@@ -350,8 +353,6 @@
             return guid;
         };
         me.intersect = function(obj1, obj2, func) {
-            // TODO return array/obj containing items that both share
-            var isArray = me.is.array(obj1);
             var build = [];
             var index1 = me.map(obj1, function(x, y) { return { value: y, key: (func) ? func(x) : x }; }, { build: {} });
             var index2 = me.map(obj2, function(x, y) { return { value: y, key: (func) ? func(x) : x }; }, { build: {} });
@@ -417,7 +418,9 @@
             /// If it returns nothing than the map fills with undefined.</param>
             /// <param type="Object(Optional)" name="e">Event param for loop customization like pushing multiple into the return object at once or skipping the current iteration or stopping the loop.</param>
             /// <returns type="Array/Object">Returns the mapped array or object.</returns>
-            var event = me.flow(options).def().update({ stop: false, skip: false, pushMultiple: false, build: [] }).value();
+            var event = { stop: false, skip: false, pushMultiple: false, build: [] };
+            if(me.is.set(options))
+                me.fuse(event, options);
             var isArray = me.is.array(event.build);
             var isObject = me.is.object(event.build);
             var key = me.is.function(func) ? func : function (v) { return v; };
@@ -446,7 +449,9 @@
             return event.build;
         };
         me.match = function(obj1, obj2, options) {
-            var event = me.flow(options).def().update({ checkType: false, recursive: true, explicit: false }).value();
+            var event = { checkType: false, recursive: true, explicit: false };
+            if(me.is.set(options))
+                me.fuse(event, options);
             var flag = true;
             if(event.checkType)
                 if(!me.is.sameType(obj1, obj2))
@@ -542,7 +547,9 @@
             /// <param type="Function/Value" name="func">Function passed (value, key) need to return true/false, or raw value to search for.</param>
             /// <returns type="Value">If the resulting conditions are met it will return the value, otherwise null.</returns>
             var ret = null,
-                opt = me.flow(options).set().update({ default: null, all: false, getKey: false }).value();
+                opt = { default: null, all: false, getKey: false };
+            if(me.is.set(options))
+                me.fuse(opt, options);
             if (me.is.function(func)) {
                 me.all(obj, function (x, y, e) {
                     if (func(x, y)) {
@@ -572,9 +579,10 @@
             /// <returns type="Array"></returns>
             if (me.is.array(options)) {
                 var o = me.map(options, function (x) {
-                    return me.flow(x).def().update({ dir: 'asc', key: function key(v) {
-                            return v;
-                        } }).value();
+                    var opt = { dir: 'asc', key: function key(v) { return v; } };
+                    if(me.is.set(x))
+                        me.fuse(opt, x);
+                    return opt;
                 });
                 var rev, result, A, B;
                 return array.slice().sort(function (a, b) {
@@ -591,9 +599,9 @@
                     return result;
                 });
             } else {
-                var o = me.flow(options).def().update({ dir: 'asc', key: function key(v) {
-                        return v;
-                    } }).value();
+                var o = { dir: 'asc', key: function key(v) { return v; } };
+                if(me.is.set(options))
+                    me.fuse(o, options);
                 var rev = o.dir == 'asc' ? true : false;
                 return array.slice().sort(function (a, b) {
                     var A = o.key(a),
@@ -609,7 +617,8 @@
             /// <param type="Value" name="def">The default value returned if nothing else matches.</param>
             /// <returns type="Value">The value returned from the hash, or if no match is found the default is returned.</returns>
             var retval = hash[value];
-            me.flow(retval).def().isFalse(function () { retval = def; });
+            if(!me.is.def(retval))
+                retval = def;
             if (me.is.function(retval)) 
                 retval = retval(value);
             return retval;
