@@ -25,7 +25,6 @@ console.log(__.is.string({}));
 console.log(__.is.number(''));
 console.log(__.is.def(null)); // Boolean eval
 console.log(__.is.set(0)); // Check for null, undefined and NaN
-console.log(__.flow([]).def().getProperty('length').def().result); // [].length is defined
 
 // And more
 __.all(__, function(x, y) { console.log(y); });
