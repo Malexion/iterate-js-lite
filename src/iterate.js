@@ -126,7 +126,8 @@
             /// <param type="String(Optional)" name="methodChain">String based path to the object property. Ex: { item: { type: 1 } } with 'item' it will find { type: 1 } with 'item.type' it will find 1.</param>
             me.all(obj, function (v) {
                 var prop = me.prop(v, methodChain);
-                if (__.is.function(prop)) prop(args);
+                if (__.is.function(prop)) 
+                    prop(args);
             });
         };
         me.class = function (construct, methods, inherit) {

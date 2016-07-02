@@ -1,10 +1,16 @@
 # iterate-js-lite
 
+## Description
+
+Base iterate-js library for the full setup see the extension iterate-js library.
+
 ## Installation
 
 Install package with NPM and add it to your development dependencies:
 
 `npm install iterate-js-lite`
+
+Around 10kb uglified/minified.
 
 ## Usage
 
@@ -19,6 +25,9 @@ __.all({ 'hello': 1, 'world': 2 }, function(x, y) { console.log(y); });
 console.log(__.map([ 'hello', 'world' ], function(x) { return x; }));
 // Map array or object to either or
 console.log(__.map([ 'hello', 'world' ], function(x, y, z) { return { key: y, value: x }; }, { build: {} })); 
+// Well suited for arrow functions in ecma 6
+console.log(__.map([ 'hello', 'world' ], x => x));
+console.log(__.map([ 'hello', 'world' ], (x, y) => ({ key: y, value: x }), { build: {} }));
 
 // Evaluate anything
 console.log(__.is.string({}));
