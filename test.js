@@ -2,6 +2,10 @@ var __ = require('./dist/iterate.js');
 
 console.log(__);
 
+// string.format test simultaneous replace
+
+//console.log('{0}{1}'.format('{1}', '{0}'));
+
 // Distinct Testing
 
 // var intList = [ 1, 1, 2, 3, 3, 4 ];

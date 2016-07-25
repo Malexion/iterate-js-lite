@@ -13,13 +13,10 @@
         }return result;
     };
     String.prototype.format = function () {
-        var content = this;
-        for (var i = 0; i < arguments.length; i++) {
-            //var replacement = '{' + i + '}';
-            var regEx = new RegExp('\\{' + i + '\\}', 'gi');
-            content = content.replace(regEx, arguments[i]);
-        }
-        return content;
+        var args = arguments;
+        return this.replace(/{(\d+)}/g, function(match, number) { 
+          return __.is.set(args[number]) ? args[number] : match;
+        });
     };
     String.prototype.contains = function (value, ignoreCase) {
         if (ignoreCase) return this.toLowerCase().indexOf(value.toLowerCase()) > -1;
@@ -101,7 +98,8 @@
                 var length = obj.length;
                 for(var i = 0; i < length; i++) {
                     func(obj[i], i, event);
-                    if(event.stop) break;
+                    if(event.stop) 
+                        break;
                 }
             } else if(me.is.number(obj)) {
                 var count = 0,
@@ -109,26 +107,17 @@
                 while(count < target) {
                     count++;
                     func(count, target, event);
-                    if(event.stop) break;
+                    if(event.stop) 
+                        break;
                 }
             } else {
                 for (var val in obj) {
                     if (all || obj.hasOwnProperty(val)) 
                         func(obj[val], val, event);
-                    if(event.stop) break;
+                    if(event.stop) 
+                        break;
                 }
             }
-        };
-        me.call = function (obj, args, methodChain) {
-            /// <summary>Iterates over an iterable and attempts to call a function at the end of the resulting method chain for each iteration. Ex: Calls every function in an array of functions.</summary>
-            /// <param type="Iterable" name="obj">The item to iterate over, works on objects, arrays, argumates and anything that can iterate.</param>
-            /// <param type="Arguments(Optional)" name="args">Arguments passed into the recieving functions.</param>
-            /// <param type="String(Optional)" name="methodChain">String based path to the object property. Ex: { item: { type: 1 } } with 'item' it will find { type: 1 } with 'item.type' it will find 1.</param>
-            me.all(obj, function (v) {
-                var prop = me.prop(v, methodChain);
-                if (__.is.function(prop)) 
-                    prop(args);
-            });
         };
         me.class = function (construct, methods, inherit) {
             var customFuse = function customFuse(target, properties) {
@@ -145,10 +134,15 @@
             };
             var proto = methods || {};
             if (inherit) {
-                if (me.is.array(inherit)) me.all(inherit, function (x) {
-                    proto = customFuse(Object.create(x.prototype), proto);
-                });else proto = customFuse(Object.create(inherit.prototype), proto);
-            } else proto = customFuse({}, proto);
+                if (me.is.array(inherit)) 
+                    me.all(inherit, function (x) {
+                        proto = customFuse(Object.create(x.prototype), proto);
+                    });
+                else 
+                    proto = customFuse(Object.create(inherit.prototype), proto);
+            } 
+            else 
+                proto = customFuse({}, proto);
             construct.prototype = proto;
             construct.prototype.constructor = construct;
             return construct;
@@ -160,9 +154,10 @@
             /// <param type="String/Function/Value" name="func">String fragment, Function passed (value, key) need to return true/false, or raw value to search for.</param>
             /// <returns type="Bool">If the resulting conditions are met it will return true, otherwise false.</returns>
             var retVal = false;
-            if (__.is.string(obj)) {
-                if (me.is.function(func)) retVal = obj.contains(func(obj));else retVal = obj.contains(func);
-            } else retVal = me.is.def(me.search(obj, func));
+            if (__.is.string(obj))
+                retval = obj.contains((me.is.function(func)) ? func(obj) : func);
+            else 
+                retVal = me.is.set(me.search(obj, func));
             return retVal;
         };
         me.count = function (obj, func) {
@@ -172,10 +167,11 @@
             /// <returns type="Integer">The total count of the values searched.</returns>
             var count = 0,
                 key = me.is.function(func) ? func : function (v, k) {
-                return v;
-            };
+                    return v;
+                };
             me.all(obj, function (v, k) {
-                if (me.is.set(key(v, k))) count++;
+                if (me.is.set(key(v, k))) 
+                    count++;
             });
             return count;
         };
@@ -202,7 +198,6 @@
                     return (isArray) ? x : { key: y, value: x };
                 } else
                     z.skip = true;
-                console.log(index);
             }, { build: (isArray) ? [] : {} });
         };
         me.first = function (obj, key, n) {
@@ -218,14 +213,16 @@
                 if (me.is.array(obj)) {
                     retVal = [];
                     me.all(obj, function (v, k, e) {
-                        if (count > n) e.stop = true;
+                        if (count > n) 
+                            e.stop = true;
                         count++;
-                        if (key) retVal.push(k);else retVal.push(v);
+                        retval.push((key) ? k : v);
                     });
                 } else {
                     retVal = {};
                     me.all(obj, function (v, k, e) {
-                        if (count > n) e.stop = true;
+                        if (count > n) 
+                            e.stop = true;
                         retVal[k] = v;
                         count++;
                     });
@@ -233,7 +230,7 @@
             } else {
                 me.all(obj, function (v, k, e) {
                     e.stop = true;
-                    if (key) retVal = k;else retVal = v;
+                    retval = (key) ? k : v;
                 });
             }
             return retVal;
@@ -250,14 +247,18 @@
                 if (me.is.array(obj)) {
                     ret = [];
                     me.all(obj, function (x, y, e) {
-                        if (func(x, y, event)) ret.push(x);
-                        if (event.stop) e.stop = true;
+                        if (func(x, y, event)) 
+                            ret.push(x);
+                        if (event.stop) 
+                            e.stop = true;
                     });
                 } else if (me.is.object(obj)) {
                     ret = {};
                     me.all(obj, function (x, y, e) {
-                        if (func(x, y, event)) ret[y] = x;
-                        if (event.stop) e.stop = true;
+                        if (func(x, y, event)) 
+                            ret[y] = x;
+                        if (event.stop) 
+                            e.stop = true;
                     });
                 }
             } else if (me.is.object(func)) {
@@ -281,11 +282,7 @@
             if(__.is.object(params))
                 me.fuse(options, params);
             var temp = me.formats[options.type.toLowerCase()];
-            var retVal = '';
-            if (__.is.function(temp)) 
-                retVal = temp(options);
-            else 
-                retVal = options.value;
+            var retVal = (__.is.function(temp)) ? temp(options) : '';
             return retVal;
         };
         me.fuse = function (obj1, obj2, deep, all) {
@@ -298,13 +295,22 @@
             /// <returns type="Object">Returns obj1 after the resulting merge with obj2.</returns>
             var deepMode = deep || false;
             me.all(obj2, function (object, key, all) {
-                if (me.is.object(object) && me.is.set(obj1[key]) && obj1[key]._identifier == 'Config Object') obj1[key].update(object, true);else if (me.is.object(object) && object._identifier == 'Replace Object') obj1[key] = object.content();else {
+                if (me.is.object(object) && me.is.set(obj1[key]) && obj1[key]._identifier == 'Config Object') 
+                    obj1[key].update(object, true);
+                else if (me.is.object(object) && object._identifier == 'Replace Object') 
+                    obj1[key] = object.content();
+                else {
                     if (deepMode && (me.is.object(object) || me.is.array(object))) {
                         if (!me.is.set(obj1[key])) {
-                            if (me.is.object(object)) obj1[key] = {};else if (me.is.array(object)) obj1[key] = [];
+                            if (me.is.object(object)) 
+                                obj1[key] = {};
+                            else if (me.is.array(object)) 
+                                obj1[key] = [];
                         }
                         me.fuse(obj1[key], object, true);
-                    } else obj1[key] = object;
+                    } 
+                    else 
+                        obj1[key] = object;
                 }
             });
             return obj1;
@@ -321,9 +327,7 @@
             /// <param type="Function/String(Optional)" name="func">Function or string property chain that will attempt to get to the value of the object,
             /// if undefined it will just return the iterated object.</param>
             /// <returns type="Object">Returns an object with properties defining the groups and objects that match in arrays within those groups.</returns>
-            var key = me.is.function(func) ? func : function (v) {
-                    return me.prop(v, func);
-                },
+            var key = me.is.function(func) ? func : function (v) { return me.prop(v, func); },
                 retVal = {},
                 value = null;
             me.all(obj, function (v) {
@@ -380,13 +384,13 @@
                     me.all(process, function (v, k, e) {
                         if (count > n) e.stop = true;
                         count++;
-                        if (key) retVal.push(k);else retVal.push(v);
+                        retVal.push((key) ? k : v);
                     });
                 } else {
                     me.all(process, function (v, k, e) {
                         e.stop = true;
                         count++;
-                        if (key) retVal = k;else retVal = v;
+                        retVal = (key) ? k : v;
                     });
                 }
             } else {
@@ -404,8 +408,8 @@
                 } else {
                     me.all(process, function (v, k, e) {
                         e.stop = true;
-                        if (key) retVal = v;else retVal = obj[v];
                         count++;
+                        retVal = (key) ? v : obj[v];
                     });
                 }
             }
@@ -437,9 +441,7 @@
                     event.skip = false;
                 else {
                     if (event.pushMultiple) {
-                        me.all(value, function (v) {
-                            return add(v);
-                        });
+                        me.all(value, function (v) { add(v); });
                         event.pushMultiple = false;
                     } else 
                         add(value);
@@ -479,12 +481,12 @@
             /// <param type="String/Int" name="key2">The target key of the property to be moved.</param>
             /// <returns type="Array/Object">Returns the array or object passed in.</returns>
             if(key1 != key2) {
-            if (me.is.array(obj)) 
-                obj.splice(key2, 0, obj.splice(key1, 1)[0]);
-            else {
-                obj[key2] = obj[key1];
-                delete obj[key1];
-            }
+                if (me.is.array(obj)) 
+                    obj.splice(key2, 0, obj.splice(key1, 1)[0]);
+                else {
+                    obj[key2] = obj[key1];
+                    delete obj[key1];
+                }
             }
             return obj;
         };
@@ -502,7 +504,9 @@
                         e.stop = true;
                 });
                 return current;
-            } else return obj;
+            } 
+            else 
+                return obj;
         };
         me.rank = function (obj, func) {
             /// <summary>Requires sorted array and will use a key in an attempt to rank the values.</summary>
@@ -526,7 +530,8 @@
             /// <returns type="Array/Object">Returns the modified object.</returns>
             if (me.is.array(obj)) {
                 var idx = obj.indexOf(item);
-                if (idx > -1) obj.splice(idx, 1);
+                if (idx > -1) 
+                    obj.splice(idx, 1);
             } else if (me.is.object(obj)) {
                 var key = me.search(obj, item, { getKey: true });
                 delete obj[key];
@@ -595,7 +600,8 @@
 
                         result = (A < B ? -1 : A > B ? 1 : 0) * [-1, 1][+!!rev];
 
-                        if (result != 0) z.stop = true;
+                        if (result != 0) 
+                            z.stop = true;
                     });
                     return result;
                 });
@@ -651,6 +657,13 @@
                 var temp = params.value.toString();
                 if (temp.length < params.places) 
                     return me.formats.padleft({ value: params.delim + temp, places: params.places, delim: params.delim });
+                else 
+                    return temp;
+            },
+            padRight: function(params) {
+                var temp = params.value.toString();
+                if (temp.length < params.places) 
+                    return me.formats.padRight({ value: temp + params.delim, places: params.places, delim: params.delim });
                 else 
                     return temp;
             }
@@ -711,15 +724,19 @@
             r16: function () {
                 return Math.floor((1 + Math.random()) * 0x10000).toString(16).substring(1);
             },
+            roundTo: function (value, step) {
+                return Math.round(value / step) * step;
+            },
+            roundDownTo: function (value, step) {
+                return Math.floor(value / step) * step;
+            },
             roundUpTo: function (value, step) {
                 return Math.ceil(value / step) * step;
             },
             median: function (values, func) {
                 var obj = values;
                 if (func) obj = me.map(values, func);
-                obj.sort(function (a, b) {
-                    return a - b;
-                });
+                obj = me.sort(obj);
                 var half = Math.floor(obj.length / 2);
                 if (obj.length % 2) 
                     return obj[half];
@@ -728,7 +745,9 @@
             },
             sum: function (values, func) {
                 var sum = 0;
-                me.all(values, function (x) { sum += (func) ? func(x) : x; });
+                me.all(values, function (x) { 
+                    sum += (func) ? func(x) : x; 
+                });
                 return sum;
             },
             average: function (values, func) {
@@ -788,8 +807,19 @@
         }
     });
 
+    // Base for __.fuse object.update() classes
+    var Updatable = __.class(function() {}, {
+        _identifier: {
+            get: function() {
+                return 'Config Object';
+            }
+        },
+        update: function() {}
+    });
+
     __.lib = {
-        Overwrite: Overwrite
+        Overwrite: Overwrite,
+        Updatable: Updatable
     };
 
     if( typeof module !== 'undefined' )
