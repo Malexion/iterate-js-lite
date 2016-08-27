@@ -1,6 +1,6 @@
 {
   "name": "iterate-js-lite",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Collection of data processing experiments designed for use with aurelia/node.js and brings in some dearly missed C# features like '{0} {1}'.format('foo', 'bar').",
   "main": "index.js",
   "scripts": {
