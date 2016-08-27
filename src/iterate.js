@@ -92,8 +92,8 @@
             /// <param type="Iterable" name="obj">The item to iterate over, works on objects, arrays, argumates and anything that can iterate.</param>
             /// <param type="Function" name="func">The function called each iteration, passed (value, key, event).</param>
             /// <param type="Bool(Optional)" name="all">The optional bool to toggle off the hasOwnProperty check, note that it will still work on arrays and arguments regardless.</param>
-            var event = { stop: false },
-                getAll = (all === true);
+            var event = { stop: false };
+
             if(me.is.array(obj)) {
                 var length = obj.length;
                 for(var i = 0; i < length; i++) {
@@ -186,6 +186,13 @@
                     func.apply(context, args);
                 }, time);
             };
+        };
+        me.deepall = function(obj, func, all) {
+            me.all(obj, function(x, y, z) {
+                func(x, y, z);
+                if(!z.stop && (me.is.array(x) || me.is.object(x)))
+                    me.deepall(x, func, all);
+            }, all);
         };
         me.distinct = function(obj, func) {
             var index = [],
@@ -423,28 +430,29 @@
             /// If it returns nothing than the map fills with undefined.</param>
             /// <param type="Object(Optional)" name="e">Event param for loop customization like pushing multiple into the return object at once or skipping the current iteration or stopping the loop.</param>
             /// <returns type="Array/Object">Returns the mapped array or object.</returns>
-            var event = { stop: false, skip: false, pushMultiple: false, build: [] };
+            var event = { stop: false, skip: false, manual: false, pushMultiple: false, build: [] },
+                parsedvalue = null;
             if(me.is.set(options))
                 me.fuse(event, options);
-            var isArray = me.is.array(event.build);
-            var isObject = me.is.object(event.build);
-            var key = me.is.function(func) ? func : function (v) { return v; };
-            var add = function add(value) {
-                if (isArray) 
-                    event.build.push(value);
-                else if (isObject) 
-                    event.build[value.key] = value.value;
-            };
+            var isArray = me.is.array(event.build),
+                isObject = me.is.object(event.build),
+                key = me.is.function(func) ? func : function (v) { return v; },
+                add = function(value) {
+                    if (isArray) 
+                        event.build.push(value);
+                    else if (isObject) 
+                        event.build[value.key] = value.value;
+                };
             me.all(obj, function (x, y, e) {
-                var value = key(x, y, event);
-                if (event.skip) 
+                parsedvalue = key(x, y, event);
+                if (event.skip || event.manual) 
                     event.skip = false;
                 else {
                     if (event.pushMultiple) {
-                        me.all(value, function (v) { add(v); });
+                        me.all(parsedvalue, function (v) { add(v); });
                         event.pushMultiple = false;
                     } else 
-                        add(value);
+                        add(parsedvalue);
                 }
                 if (event.stop) 
                     e.stop = true;
@@ -624,7 +632,7 @@
             /// <param type="Value" name="def">The default value returned if nothing else matches.</param>
             /// <returns type="Value">The value returned from the hash, or if no match is found the default is returned.</returns>
             var retval = hash[value];
-            if(!me.is.def(retval))
+            if(!me.is.set(retval))
                 retval = def;
             if (me.is.function(retval)) 
                 retval = retval(value);
@@ -735,7 +743,8 @@
             },
             median: function (values, func) {
                 var obj = values;
-                if (func) obj = me.map(values, func);
+                if (func) 
+                    obj = me.map(values, func);
                 obj = me.sort(obj);
                 var half = Math.floor(obj.length / 2);
                 if (obj.length % 2) 
@@ -762,12 +771,12 @@
                     if(ret == null)
                         ret = x;
                     if(func) {
-                        if (values[x] > ret) 
-                            ret = values[x];
-                    } else {
                         var temp = func(values[x]);
                         if (temp > ret) 
                             ret = temp;
+                    } else {
+                        if (values[x] > ret) 
+                            ret = values[x];
                     }
                 });
                 return ret;
@@ -778,15 +787,20 @@
                     if(ret == null)
                         ret = x;
                     if(func) {
-                        if (values[x] < ret) 
-                            ret = values[x];
-                    } else {
                         var temp = func(values[x]);
                         if (temp < ret) 
                             ret = temp;
+                    } else {
+                        if (values[x] < ret) 
+                            ret = values[x];
                     }
                 });
                 return ret;
+            },
+            between: function(value, min, max) {
+                var top = max ||0,
+                    bottom = min || 0;
+                return Math.max(Math.min(parseFloat(value), max), bottom);
             },
             percentages: function (values, func) {
                 var total = me.math.sum(values, func);
