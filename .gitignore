@@ -2,3 +2,4 @@ node_modules
 npm-debug.log
 publish.bat
 commit.bat
+iterate-js-lite.sublime-project

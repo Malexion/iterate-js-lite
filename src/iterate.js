@@ -601,7 +601,7 @@
                 var rev, result, A, B;
                 return array.slice().sort(function (a, b) {
                     me.all(o, function (x, y, z) {
-                        rev = o.dir == 'asc' ? true : false;
+                        rev = x.dir == 'asc' ? true : false;
                         result = 0;
                         A = x.key(a);
                         B = x.key(b);
