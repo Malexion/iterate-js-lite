@@ -311,7 +311,7 @@
 			"file": "src/iterate.js",
 			"settings":
 			{
-				"buffer_size": 40384,
+				"buffer_size": 40377,
 				"line_ending": "Windows"
 			}
 		}
@@ -634,15 +634,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 40384,
+						"buffer_size": 40377,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								33142,
-								33142
+								26019,
+								26019
 							]
 						],
 						"settings":
@@ -652,7 +652,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 0.0,
+						"translation.y": 120.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,

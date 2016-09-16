@@ -498,7 +498,7 @@
             }
             return obj;
         };
-        me.prop = function (obj, path, value) {
+        me.prop = function (obj, path) {
             /// <summary>Searches an object using a property path and returns the resulting value.</summary>
             /// <param type="Object" name="obj">The item to be searched along the path chain.</param>
             /// <param type="String(Optional)" name="path">String based path to the object property. Ex: { item: { type: 1 } } with 'item' it will find { type: 1 } with 'item.type' it will find 1.</param>
@@ -771,12 +771,12 @@
                     if(ret == null)
                         ret = x;
                     if(func) {
-                        var temp = func(values[x]);
+                        var temp = func(x);
                         if (temp > ret) 
                             ret = temp;
                     } else {
-                        if (values[x] > ret) 
-                            ret = values[x];
+                        if (x > ret) 
+                            ret = x;
                     }
                 });
                 return ret;
@@ -787,12 +787,12 @@
                     if(ret == null)
                         ret = x;
                     if(func) {
-                        var temp = func(values[x]);
+                        var temp = func(x);
                         if (temp < ret) 
                             ret = temp;
                     } else {
-                        if (values[x] < ret) 
-                            ret = values[x];
+                        if (x < ret) 
+                            ret = x;
                     }
                 });
                 return ret;
