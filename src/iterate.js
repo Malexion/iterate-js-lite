@@ -292,34 +292,41 @@
             var retVal = (__.is.function(temp)) ? temp(options) : '';
             return retVal;
         };
-        me.fuse = function (obj1, obj2, deep, all) {
+        me.fuse = function (obj1, obj2, opt) {
             /// <summary>Fuses the second parameter object into the first overriding its properties and creating new ones where necessary.
             /// Has detection for Config and Override Objects, allowing layering.</summary>
             /// <param type="Object" name="obj1">Base Object to be overwritten.</param>
             /// <param type="Object" name="obj2">Object that will overwrite.</param>
-            /// <param type="Bool(Optional)" name="deep">If true fuse will enter deep copy mode and recursively iterate through arrays and objects.
-            /// There is no recursive limit so be careful about object loops.</param>
+            /// <param type="Object(Optional)" name="opt">Object with optional options for the fuse.</param>
             /// <returns type="Object">Returns obj1 after the resulting merge with obj2.</returns>
-            var deepMode = deep || false;
-            me.all(obj2, function (object, key, all) {
+            var options = {
+                deep: me.prop(opt, 'deep') || false,
+                all: me.prop(opt, 'all') || false,
+                handler: me.prop(opt, 'handler')
+            };
+            me.all(obj2, function (object, key, e) {
+                if(me.is.function(options.handler))
+                    options.handler(object, key, e);
+                if(e.stop || e.skip)
+                    return;
                 if (me.is.object(object) && me.is.set(obj1[key]) && obj1[key]._identifier == 'Config Object') 
                     obj1[key].update(object, true);
                 else if (me.is.object(object) && object._identifier == 'Replace Object') 
                     obj1[key] = object.content();
                 else {
-                    if (deepMode && (me.is.object(object) || me.is.array(object))) {
+                    if (options.deep && (me.is.object(object) || me.is.array(object))) {
                         if (!me.is.set(obj1[key])) {
                             if (me.is.object(object)) 
                                 obj1[key] = {};
                             else if (me.is.array(object)) 
                                 obj1[key] = [];
                         }
-                        me.fuse(obj1[key], object, true);
+                        me.fuse(obj1[key], object, options);
                     } 
                     else 
                         obj1[key] = object;
                 }
-            });
+            }, options.all);
             return obj1;
         };
         me.getType = function (obj) {

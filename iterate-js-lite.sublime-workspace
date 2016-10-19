@@ -311,7 +311,8 @@
 			"file": "src/iterate.js",
 			"settings":
 			{
-				"buffer_size": 40377,
+				"buffer_size": 40329,
+				"encoding": "UTF-8 with BOM",
 				"line_ending": "Windows"
 			}
 		}
@@ -493,7 +494,7 @@
 	],
 	"find":
 	{
-		"height": 23.0
+		"height": 34.0
 	},
 	"find_in_files":
 	{
@@ -509,6 +510,7 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			".prop",
 			"emitEvent",
 			"__.class",
 			"#applicationHost",
@@ -634,15 +636,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 40377,
+						"buffer_size": 40329,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								26019,
-								26019
+								24941,
+								24941
 							]
 						],
 						"settings":
@@ -652,7 +654,7 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 120.0,
+						"translation.y": 7242.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
