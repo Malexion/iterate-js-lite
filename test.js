@@ -2,6 +2,58 @@ var __ = require('./dist/iterate.js');
 
 console.log(__);
 
+/*
+	Test
+	- Require/log above
+	- __.options
+	- __.first
+	- __.last
+	- __.format
+	- __.fuse
+	- __.search
+	- __.gen.guid
+
+	Update README.md
+*/
+
+// console.log('__.options');
+// console.log('');
+// console.log(__.options({ test: true, adv: { pass: false } }, null));
+// console.log(__.options({ test: true, adv: { pass: false } }, { test: false }));
+
+// console.log('__.first');
+// console.log('');
+// console.log(__.first([ 5, 3, 1, 2, 4 ]));
+// console.log(__.first({ f: 2, a: 6, c: 11, d: 12, x: 100 }));
+// console.log(__.first([ 5, 3, 1, 2, 4 ], { limit: 3 }));
+// console.log(__.first({ f: 2, a: 6, c: 11, d: 12, x: 100 }, { limit: 3 }));
+
+// console.log('__.last');
+// console.log('');
+// console.log(__.last([ 5, 3, 1, 2, 4 ]));
+// console.log(__.last({ f: 2, a: 6, c: 11, d: 12, x: 100 }));
+// console.log(__.last([ 5, 3, 1, 2, 4 ], { limit: 3 }));
+// console.log(__.last({ f: 2, a: 6, c: 11, d: 12, x: 100 }, { limit: 3 }));
+
+// console.log('__.fuse');
+// console.log('');
+// console.log(__.fuse({ fish: 'stix', test: { sub: false, high: true } }, { fish: false, test: { high: false } }));
+// console.log(__.fuse({ fish: 'stix', test: { sub: false, high: true } }, { fish: false, test: { high: false } }, { deep: true }));
+
+// console.log('__.search');
+// console.log('');
+// console.log(__.search([ 5, 3, 1, 2, 4 ], 2));
+// console.log(__.search([{ a: 20 }, { a: 3 }, { a: 34 }, { a: 1 }, { a: -20 }, { a: 100 }], x => x.a == 3));
+// console.log(__.search([{ a: 20 }, { a: 3 }, { a: 34 }, { a: 1 }, { a: -20 }, { a: 100 }], x => x.a == -3), { default: 'fishstix' });
+
+// console.log('__.gen.guid');
+// console.log('');
+// console.log(__.gen.guid());
+// var store = {};
+// console.log(__.gen.guid({ map: store }));
+// console.log(__.gen.guid({ map: store }));
+// console.log(store);
+
 // string.format test simultaneous replace
 
 //console.log('{0}{1}'.format('{1}', '{0}'));

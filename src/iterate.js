@@ -84,7 +84,6 @@
             undefined: 'Undefined',
             nan: 'Number'
         };
-        me.guidMap = {};
 
         // Base Functions
         me.all = function (obj, func, all) {
@@ -207,7 +206,7 @@
                     z.skip = true;
             }, { build: (isArray) ? [] : {} });
         };
-        me.first = function (obj, key, n) {
+        me.first = function (obj, options) {
             /// <summary>Attempts to iterate over the iterable object and get the first object, if key is true then it will return the first objects key,
             /// if n greater than 1 or defined it will return that number of objects.</summary>
             /// <param type="Iterable" name="obj">The item to iterate over, works on objects, arrays, argumates and anything that can iterate.</param>
@@ -215,29 +214,16 @@
             /// <param type="Integer(Optional)" name="n">If set, will return n number of items from the front of the iterable.</param>
             /// <returns type="Value">First n number of objects found, if many it will return an array, if one than it will return the first item.</returns>
             var retVal = null,
-                count = 1;
-            if (n && n > 1) {
-                if (me.is.array(obj)) {
-                    retVal = [];
-                    me.all(obj, function (v, k, e) {
-                        if (count > n) 
-                            e.stop = true;
-                        count++;
-                        retval.push((key) ? k : v);
-                    });
-                } else {
-                    retVal = {};
-                    me.all(obj, function (v, k, e) {
-                        if (count > n) 
-                            e.stop = true;
-                        retVal[k] = v;
-                        count++;
-                    });
-                }
-            } else {
+                count = 1,
+                opt = me.options({ keys: false, limit: 1 }, options);
+
+            if (me.is.set(opt.limit)) {
+                retVal = me.is.array(obj) ? [] : {};
                 me.all(obj, function (v, k, e) {
-                    e.stop = true;
-                    retval = (key) ? k : v;
+                    count++;
+                    if (count > opt.limit) 
+                        e.stop = true;
+                    me.is.array(obj) ? retVal.push((opt.keys) ? k : v) : retVal[k] = v;
                 });
             }
             return retVal;
@@ -281,52 +267,54 @@
             }
             return ret;
         };
-        me.format = function (params) {
+        me.format = function (options) {
             /// <summary>Attempts to format the params passed in given a type property within params.</summary>
             /// <param type="Object" name="params">Object parameters passed in, see i.formatOptions for full view of replaceable params.</param>
             /// <returns type="String">Formatted value.</returns>
-            var options = me.i.formatOptions();
-            if(__.is.object(params))
-                me.fuse(options, params);
-            var temp = me.formats[options.type.toLowerCase()];
-            var retVal = (__.is.function(temp)) ? temp(options) : '';
-            return retVal;
+            var options = me.options(me.i.formatOptions(), options),
+                temp = me.formats[options.type.toLowerCase()];
+            return (__.is.function(temp)) ? temp(options) : '';
         };
-        me.fuse = function (obj1, obj2, opt) {
+        me.fuse = function (obj1, obj2, options) {
             /// <summary>Fuses the second parameter object into the first overriding its properties and creating new ones where necessary.
             /// Has detection for Config and Override Objects, allowing layering.</summary>
             /// <param type="Object" name="obj1">Base Object to be overwritten.</param>
             /// <param type="Object" name="obj2">Object that will overwrite.</param>
             /// <param type="Object(Optional)" name="opt">Object with optional options for the fuse.</param>
             /// <returns type="Object">Returns obj1 after the resulting merge with obj2.</returns>
-            var options = {
-                deep: me.prop(opt, 'deep') || false,
-                all: me.prop(opt, 'all') || false,
-                handler: me.prop(opt, 'handler')
-            };
+            var opt = {
+                    deep: me.prop(options, 'deep') || false,
+                    all: me.prop(options, 'all') || false,
+                    handler: me.prop(options, 'handler')
+                },
+                target;
+
             me.all(obj2, function (object, key, e) {
-                if(me.is.function(options.handler))
-                    options.handler(object, key, e);
+                target = object;
+                if(me.is.function(opt.handler))
+                    target = opt.handler({ obj1: obj1, obj2: obj2, value: object, key: key }, e);
                 if(e.stop || e.skip)
                     return;
-                if (me.is.object(object) && me.is.set(obj1[key]) && obj1[key]._identifier == 'Config Object') 
-                    obj1[key].update(object, true);
-                else if (me.is.object(object) && object._identifier == 'Replace Object') 
-                    obj1[key] = object.content();
+
+                if (me.is.object(target) && me.prop(obj1[key], '_identifier') == 'Config Object') 
+                    obj1[key].update(target, true);
+                else if (me.is.object(target) && target._identifier == 'Replace Object') 
+                    obj1[key] = target.content();
                 else {
-                    if (options.deep && (me.is.object(object) || me.is.array(object))) {
+                    if (opt.deep && (me.is.object(target) || me.is.array(target))) {
                         if (!me.is.set(obj1[key])) {
-                            if (me.is.object(object)) 
+                            if (me.is.object(target)) 
                                 obj1[key] = {};
-                            else if (me.is.array(object)) 
+                            else if (me.is.array(target)) 
                                 obj1[key] = [];
                         }
-                        me.fuse(obj1[key], object, options);
+                        me.fuse(obj1[key], target, opt);
                     } 
                     else 
-                        obj1[key] = object;
+                        obj1[key] = target;
                 }
-            }, options.all);
+
+            }, opt.all);
             return obj1;
         };
         me.getType = function (obj) {
@@ -355,22 +343,6 @@
             });
             return retVal;
         };
-        me.guid = function (seperator, track) {
-            /// <summary>Attempts to create a unique guid using random generators. Warning this guid is not tracked so there is a very very small chance it could be generated twice.</summary>
-            /// <param type="String(Optional)" name="seperator">Optional parameter to set the seperator between random strings. Default is '-'.</param>
-            /// <returns type="String">Returns a guid string.</returns>
-            var sep = me.i.setConditions(seperator) ? seperator : '-';
-            var guid = me.math.r16() + me.math.r16() + sep + me.math.r16() + sep + me.math.r16() + sep + me.math.r16() + sep + me.math.r16() + me.math.r16() + me.math.r16();
-            if (track) {
-                if (me.guidMap[track] && me.guidMap[track][guid]) 
-                    return me.guid(seperator, track);
-                else {
-                    me.guidMap[track] = {};
-                    me.guidMap[track][guid] = true;
-                }
-            }
-            return guid;
-        };
         me.intersect = function(obj1, obj2, func) {
             var build = [];
             var index1 = me.map(obj1, function(x, y) { return { value: y, key: (func) ? func(x) : x }; }, { build: {} });
@@ -381,7 +353,7 @@
             });
             return build;
         };
-        me.last = function (obj, key, n) {
+        me.last = function (obj, options) {
             /// <summary>Attempts to iterate over the iterable object and get the last object, if key is true then it will return the last objects key,
             /// if n greater than 1 or defined it will return that number of objects or an object with that number of properties.</summary>
             /// <param type="Iterable" name="obj">The item to iterate over, works on objects, arrays, argumates and anything that can iterate.</param>
@@ -390,42 +362,17 @@
             /// <returns type="Value">Last n number of objects found, if many it will return an array, if one than it will return the last item.</returns>
             var retVal = null,
                 count = 1,
-                process = [];
-            if (me.is.array(obj)) {
-                if (n && n > 1) {
-                    retVal = [];
-                    process = obj.reverse();
-                    me.all(process, function (v, k, e) {
-                        if (count > n) e.stop = true;
-                        count++;
-                        retVal.push((key) ? k : v);
-                    });
-                } else {
-                    me.all(process, function (v, k, e) {
+                target = (me.is.array(obj)) ? obj.reverse() : me.map(obj, function(x, y) { return { key: y, value: x }; }).reverse(),
+                opt = me.options({ keys: false, limit: 1 }, options);
+
+            if (me.is.set(opt.limit)) {
+                retVal = me.is.array(obj) ? [] : {};
+                me.all(target, function (v, k, e) {
+                    count++;
+                    if (count > opt.limit) 
                         e.stop = true;
-                        count++;
-                        retVal = (key) ? k : v;
-                    });
-                }
-            } else {
-                me.all(obj, function (v, k, e) {
-                    process.push(k);
+                    me.is.array(obj) ? retVal.push((opt.keys) ? k : v) : retVal[v.key] = v.value;
                 });
-                process.reverse();
-                if (n && n > 1) {
-                    retVal = {};
-                    me.all(process, function (v, k, e) {
-                        if (count > n) e.stop = true;
-                        retVal[v] = obj[v];
-                        count++;
-                    });
-                } else {
-                    me.all(process, function (v, k, e) {
-                        e.stop = true;
-                        count++;
-                        retVal = (key) ? v : obj[v];
-                    });
-                }
             }
             return retVal;
         };
@@ -437,11 +384,9 @@
             /// If it returns nothing than the map fills with undefined.</param>
             /// <param type="Object(Optional)" name="e">Event param for loop customization like pushing multiple into the return object at once or skipping the current iteration or stopping the loop.</param>
             /// <returns type="Array/Object">Returns the mapped array or object.</returns>
-            var event = { stop: false, skip: false, manual: false, pushMultiple: false, build: [] },
-                parsedvalue = null;
-            if(me.is.set(options))
-                me.fuse(event, options);
-            var isArray = me.is.array(event.build),
+            var event = me.options({ stop: false, skip: false, manual: false, pushMultiple: false, build: [] }, options),
+                parsedvalue = null,
+                isArray = me.is.array(event.build),
                 isObject = me.is.object(event.build),
                 key = me.is.function(func) ? func : function (v) { return v; },
                 add = function(value) {
@@ -450,6 +395,7 @@
                     else if (isObject) 
                         event.build[value.key] = value.value;
                 };
+
             me.all(obj, function (x, y, e) {
                 parsedvalue = key(x, y, event);
                 if (event.skip || event.manual) 
@@ -467,15 +413,15 @@
             return event.build;
         };
         me.match = function(obj1, obj2, options) {
-            var event = { checkType: false, recursive: true, explicit: false };
-            if(me.is.set(options))
-                me.fuse(event, options);
-            var flag = true;
+            var event = me.options({ checkType: false, recursive: true, explicit: false }, options),
+                flag = true;
+
             if(event.checkType)
                 if(!me.is.sameType(obj1, obj2))
                     return false;
             if((!me.is.set(obj1) && me.is.set(obj2)) || (me.is.set(obj1) && !me.is.set(obj2)))
                 return false;
+
             me.all(obj1, function(x, y, z) {
                 if(event.recursive && (me.is.object(x) || me.is.array(x))) {
                     if(!me.match(x, obj2[y], event)) {
@@ -504,6 +450,11 @@
                 }
             }
             return obj;
+        };
+        me.options = function(base, params) {
+            if(params)
+                me.fuse(base, params);
+            return base;
         };
         me.prop = function (obj, path) {
             /// <summary>Searches an object using a property path and returns the resulting value.</summary>
@@ -561,6 +512,9 @@
                 delete obj[key];
             return obj;
         };
+        me.scope = function(init) {
+            return init();
+        }
         me.search = function (obj, func, options) {
             /// <summary>Attempts to search the first param for the result in the most optimized fashion as the following pairs show:
             /// (array, function), (array, value), (object, function), (object, value).</summary>
@@ -568,29 +522,24 @@
             /// <param type="Function/Value" name="func">Function passed (value, key) need to return true/false, or raw value to search for.</param>
             /// <returns type="Value">If the resulting conditions are met it will return the value, otherwise null.</returns>
             var ret = null,
-                opt = { default: null, all: false, getKey: false };
-            if(me.is.set(options))
-                me.fuse(opt, options);
-            if (me.is.function(func)) {
-                me.all(obj, function (x, y, e) {
-                    if (func(x, y)) {
-                        ret = (opt.getKey) ? y : x;
-                        e.stop = true;
-                    }
-                }, opt.all);
-            } else if (me.is.array(obj)) {
-                var idx = obj.indexOf(func);
-                if (idx > -1) 
-                    ret = (opt.getKey) ? idx : obj[idx];
-            } else if (me.is.object(obj)) {
-                me.all(obj, function (x, y, e) {
-                    if (x == func) {
-                        ret = (opt.getKey) ? y : x;
-                        e.stop = true;
-                    }
-                }, opt.all);
+                state = false,
+                key = me.is.function(func) ? func : function(x) { return x == func; },
+                opt = me.options({ default: null, all: false, getKey: false }, options);
+
+            if(me.is.set(obj)) {
+                if(me.is.array(obj) && !me.is.function(func)) {
+                    ret = obj.indexOf(func);
+                } else {
+                    me.all(obj, function(x, y, e) {
+                        state = key(x, y, e);
+                        if(state) {
+                            e.stop = true;
+                            ret = (opt.getKey) ? y : x;
+                        }
+                    }, opt.all);
+                }
             }
-            return ret == null ? opt.default : ret;
+            return !me.is.set(ret) ? opt.default : ret;
         };
         me.sort = function (array, options) {
             /// <summary>Sort an array of values given options { dir: 'asc', key: v => v } both are optional, with the first giving direction and the second getting
@@ -600,10 +549,7 @@
             /// <returns type="Array"></returns>
             if (me.is.array(options)) {
                 var o = me.map(options, function (x) {
-                    var opt = { dir: 'asc', key: function key(v) { return v; } };
-                    if(me.is.set(x))
-                        me.fuse(opt, x);
-                    return opt;
+                    return me.options({ dir: 'asc', key: function key(v) { return v; } }, x);
                 });
                 var rev, result, A, B;
                 return array.slice().sort(function (a, b) {
@@ -621,10 +567,8 @@
                     return result;
                 });
             } else {
-                var o = { dir: 'asc', key: function key(v) { return v; } };
-                if(me.is.set(options))
-                    me.fuse(o, options);
-                var rev = o.dir == 'asc' ? true : false;
+                var o = me.options({ dir: 'asc', key: function key(v) { return v; } }, options),
+                    rev = o.dir == 'asc' ? true : false;
                 return array.slice().sort(function (a, b) {
                     var A = o.key(a),
                         B = o.key(b);
@@ -670,16 +614,20 @@
         me.formats = {
             padleft: function(params) {
                 var temp = params.value.toString();
-                if (temp.length < params.places) 
-                    return me.formats.padleft({ value: params.delim + temp, places: params.places, delim: params.delim });
-                else 
+                if (temp.length < params.places) {
+                    temp += params.delim.toString();
+                    params.value = temp;
+                    return me.formats.padleft(params);
+                } else 
                     return temp;
             },
-            padRight: function(params) {
+            padright: function(params) {
                 var temp = params.value.toString();
-                if (temp.length < params.places) 
-                    return me.formats.padRight({ value: temp + params.delim, places: params.places, delim: params.delim });
-                else 
+                if (temp.length < params.places) {
+                    temp += params.delim.toString();
+                    params.value = temp;
+                    return me.formats.padright(params);
+                } else 
                     return temp;
             }
         };
@@ -805,7 +753,7 @@
                 return ret;
             },
             between: function(value, min, max) {
-                var top = max ||0,
+                var top = max || 0,
                     bottom = min || 0;
                 return Math.max(Math.min(parseFloat(value), max), bottom);
             },
@@ -814,6 +762,53 @@
                 return me.map(values, function(x, y) {
                     return (total != 0) ? (((func) ? func(x) : x) / total) : 0;
                 });
+            }
+        };
+        me.gen = {
+            guid: me.scope(() => {
+                var template = '{1}{2}{0}{3}{0}{4}{0}{5}{0}{6}{7}{8}';
+
+                return function(options) {
+                    var opt = {
+                        seperator: '-',
+                        map: null
+                    };
+                    if(options)
+                        me.fuse(opt, options);
+
+                    var guid = template.format(opt.seperator, me.math.r16(), me.math.r16(), me.math.r16(), me.math.r16(), me.math.r16(), me.math.r16(), me.math.r16(), me.math.r16());
+
+                    if(me.is.object(opt.map)) {
+                        if(opt.map[guid])
+                            return me.gen.guid(opt);
+                        else
+                            opt.map[guid] = true;
+                    }
+                    return guid;
+                };
+            }),
+            password: function(options) {
+                var opt = me.options({
+                    length: 16,
+                    alpha: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWYXZ",
+                    ints: "0123456789",
+                    special: "!@#$%^&*()+~|}{[]\:;?></="
+                }, options);
+
+                var temp = '',
+                    len = (opt.length / 2) - 1,
+                    lenspec = opt.length - len - len;
+
+                for (var i = 0; i < len; i++)
+                    temp += opt.alpha.charAt(Math.floor(Math.random() * opt.alpha.length));
+
+                for (var i = 0; i < lenspec; i++)
+                    temp += opt.special.charAt(Math.floor(Math.random() * opt.special.length));
+
+                for (var i = 0; i < len; i++)
+                    temp += opt.ints.charAt(Math.floor(Math.random() * opt.ints.length));
+
+                return temp.split('').sort(function() { return 0.5 - Math.random(); }).join('');
             }
         };
     })();

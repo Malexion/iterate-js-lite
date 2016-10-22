@@ -4,6 +4,14 @@
 		"selected_items":
 		[
 			[
+				"obj",
+				"object"
+			],
+			[
+				"opt",
+				"options"
+			],
+			[
 				"colu",
 				"column"
 			],
@@ -311,8 +319,16 @@
 			"file": "src/iterate.js",
 			"settings":
 			{
-				"buffer_size": 40329,
+				"buffer_size": 40653,
 				"encoding": "UTF-8 with BOM",
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "test.js",
+			"settings":
+			{
+				"buffer_size": 1107,
 				"line_ending": "Windows"
 			}
 		}
@@ -510,6 +526,8 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"=>",
+			".fuse",
 			".prop",
 			"emitEvent",
 			"__.class",
@@ -636,15 +654,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 40329,
+						"buffer_size": 40653,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								24941,
-								24941
+								1867,
+								1867
 							]
 						],
 						"settings":
@@ -654,10 +672,38 @@
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 7242.0,
+						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "test.js",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1107,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScriptNext - ES6 Syntax/JavaScriptNext.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 1,
 					"type": "text"
 				}
 			]
