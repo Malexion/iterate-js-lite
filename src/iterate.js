@@ -481,8 +481,8 @@
             /// <returns type="Array">Array of rankings by index.</returns>
             var sorted = [],
                 key = func ? func : function (v) {
-                return v;
-            };
+                    return v;
+                };
             sorted = me.map(obj, key);
             return me.map(obj.slice(), function (v) {
                 var idx = sorted.indexOf(v);
@@ -770,13 +770,13 @@
 
                 return function(options) {
                     var opt = {
-                        seperator: '-',
+                        separator: '-',
                         map: null
                     };
                     if(options)
                         me.fuse(opt, options);
 
-                    var guid = template.format(opt.seperator, me.math.r16(), me.math.r16(), me.math.r16(), me.math.r16(), me.math.r16(), me.math.r16(), me.math.r16(), me.math.r16());
+                    var guid = template.format(opt.separator, me.math.r16(), me.math.r16(), me.math.r16(), me.math.r16(), me.math.r16(), me.math.r16(), me.math.r16(), me.math.r16());
 
                     if(me.is.object(opt.map)) {
                         if(opt.map[guid])
