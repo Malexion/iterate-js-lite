@@ -45,8 +45,16 @@
         if (index > -1) return this.substring(0, index);
         return this;
     };
+    String.prototype.truncate = function(amount, ind) {
+        var length = parseInt(amount || 50);
+        var indicator = ind || '...';
+        if(length < this.length)
+            return this.substring(0, length - indicator.length) + indicator;
+        else
+            return this;
+    };
 
-    var __ = new (function () {
+    const iteratejs = function () {
         var me = this;
         // Constant Containers
         me.i = {
@@ -153,7 +161,7 @@
             /// <param type="String/Function/Value" name="func">String fragment, Function passed (value, key) need to return true/false, or raw value to search for.</param>
             /// <returns type="Bool">If the resulting conditions are met it will return true, otherwise false.</returns>
             var retVal = false;
-            if (__.is.string(obj))
+            if (me.is.string(obj))
                 retval = obj.contains((me.is.function(func)) ? func(obj) : func);
             else 
                 retVal = me.is.set(me.search(obj, func));
@@ -205,6 +213,19 @@
                 } else
                     z.skip = true;
             }, { build: (isArray) ? [] : {} });
+        };
+        me.enum = function(obj) {
+            var retval = {};
+            me.all(obj, (value, key) => {
+                Object.defineProperty(retval, key, {
+                    get: () => value,
+                    enumerable: true,
+                    configurable: false
+                });
+            });
+            if(Object.seal)
+                retval = Object.seal(retval);
+            return retval;
         };
         me.first = function (obj, options) {
             /// <summary>Attempts to iterate over the iterable object and get the first object, if key is true then it will return the first objects key,
@@ -273,7 +294,7 @@
             /// <returns type="String">Formatted value.</returns>
             var options = me.options(me.i.formatOptions(), options),
                 temp = me.formats[options.type.toLowerCase()];
-            return (__.is.function(temp)) ? temp(options) : '';
+            return (me.is.function(temp)) ? temp(options) : '';
         };
         me.fuse = function (obj1, obj2, options) {
             /// <summary>Fuses the second parameter object into the first overriding its properties and creating new ones where necessary.
@@ -811,7 +832,9 @@
                 return temp.split('').sort(function() { return 0.5 - Math.random(); }).join('');
             }
         };
-    })();
+    };
+
+    const __ = new iteratejs();
 
     // Overwrite Payload for __.fuse() deep updates, will overwrite target object/array instead of looping through it to deep copy it
     var Overwrite = __.class(function(payload) {

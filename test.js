@@ -2,19 +2,15 @@ var __ = require('./dist/iterate.js');
 
 console.log(__);
 
-/*
-	Test
-	- Require/log above
-	- __.options
-	- __.first
-	- __.last
-	- __.format
-	- __.fuse
-	- __.search
-	- __.gen.guid
-
-	Update README.md
-*/
+// var ENUM = __.enum({
+//     COSTS: __.enum({
+//         CREATEUSER: 100,
+//         CHANGENAME: 50,
+//     }),
+// });
+// console.log(ENUM.COSTS.CREATEUSER);
+// ENUM.COSTS.CREATEUSER += 100;
+// console.log(ENUM.COSTS.CREATEUSER);
 
 // console.log('__.options');
 // console.log('');
