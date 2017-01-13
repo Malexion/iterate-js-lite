@@ -2,6 +2,8 @@ var __ = require('./dist/iterate.js');
 
 console.log(__);
 
+//console.log(__.index([ 5, 4, 1 ], x => x));
+
 // var ENUM = __.enum({
 //     COSTS: __.enum({
 //         CREATEUSER: 100,

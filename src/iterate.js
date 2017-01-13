@@ -216,9 +216,9 @@
         };
         me.enum = function(obj) {
             var retval = {};
-            me.all(obj, (value, key) => {
+            me.all(obj, function(value, key) {
                 Object.defineProperty(retval, key, {
-                    get: () => value,
+                    get: function() { return value; },
                     enumerable: true,
                     configurable: false
                 });
@@ -363,6 +363,11 @@
                 }
             });
             return retVal;
+        };
+        me.index = function(obj, key, value) {
+            key = me.is.function(key) ? key : function(x, y) { return y; };
+            value = me.is.function(value) ? value : function(x, y) { return x; };
+            return me.map(obj, function(x, y) { return { key: key(x, y), value: value(x, y) }; }, { build: {} });
         };
         me.intersect = function(obj1, obj2, func) {
             var build = [];
@@ -776,7 +781,7 @@
             between: function(value, min, max) {
                 var top = max || 0,
                     bottom = min || 0;
-                return Math.max(Math.min(parseFloat(value), max), bottom);
+                return Math.max(Math.min(parseFloat(value), top), bottom);
             },
             percentages: function (values, func) {
                 var total = me.math.sum(values, func);
@@ -786,7 +791,7 @@
             }
         };
         me.gen = {
-            guid: me.scope(() => {
+            guid: me.scope(function() {
                 var template = '{1}{2}{0}{3}{0}{4}{0}{5}{0}{6}{7}{8}';
 
                 return function(options) {
