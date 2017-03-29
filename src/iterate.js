@@ -19,8 +19,13 @@
         });
     };
     String.prototype.contains = function (value, ignoreCase) {
-        if (ignoreCase) return this.toLowerCase().indexOf(value.toLowerCase()) > -1;
-        return this.indexOf(value) > -1;
+        if(__.is.string(value)) {
+            if (ignoreCase) return this.toLowerCase().indexOf(value.toLowerCase()) > -1;
+            return this.indexOf(value) > -1;
+        } else if(__.is.regex(value)) {
+            return __.is.set(value.match(value));
+        }
+        return false;
     };
     String.prototype.whiteout = function (items) {
         var self = this;
@@ -69,6 +74,7 @@
             null: null,
             undefined: undefined,
             nan: NaN,
+            regex: /xyz/,
             setConditions: function (object) {
                 return object != null && object != undefined && object != NaN;
             },
@@ -90,7 +96,8 @@
             args: 'Arguments',
             null: 'Null',
             undefined: 'Undefined',
-            nan: 'Number'
+            nan: 'Number',
+            regex: 'RegExp'
         };
 
         // Base Functions
@@ -612,7 +619,7 @@
             if(!me.is.set(retval))
                 retval = def;
             if (me.is.function(retval)) 
-                retval = retval(value);
+                retval = retval(value, hash, def);
             return retval;
         };
         me.throttle = function (func, time) {
@@ -707,6 +714,9 @@
             },
             nan: function(object) {
                 return (me.getType(object) == me.types.integer) && isNaN(object);
+            },
+            regex: function(object) {
+                return me.getType(object) == me.types.regex;
             }
         };
         me.math = {
@@ -835,6 +845,16 @@
                     temp += opt.ints.charAt(Math.floor(Math.random() * opt.ints.length));
 
                 return temp.split('').sort(function() { return 0.5 - Math.random(); }).join('');
+            },
+            number: function(max, min, noround) {
+                max = __.is.set(max) ? max : 100;
+                min = __.is.set(min) ? min : 0;
+                if(!noround) {
+                    max = Math.ceil(max);
+                    min = Math.floor(min);
+                    return Math.floor(Math.random() * (max - min + 1)) + min;
+                }
+                return Math.random() * (max - min + 1) + min;
             }
         };
     };

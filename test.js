@@ -2,6 +2,8 @@ var __ = require('./dist/iterate.js');
 
 console.log(__);
 
+//console.log(__.map(20, () => __.gen.number(30)));
+
 //console.log(__.index([ 5, 4, 1 ], x => x));
 
 // var ENUM = __.enum({
