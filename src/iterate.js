@@ -136,7 +136,9 @@
         me.class = function (construct, methods, inherit) {
             var customFuse = function customFuse(target, properties) {
                 me.all(properties, function (x, y) {
-                    if (me.is.function(x)) target[y] = x;else if (me.is.object(x)) {
+                    if (me.is.function(x)) 
+                        target[y] = x;
+                    else if (me.is.object(x)) {
                         // Allows user to set getters/setters
                         Object.defineProperty(target, y, me.fuse({
                             enumerable: false,
@@ -489,21 +491,34 @@
                 me.fuse(base, params);
             return base;
         };
-        me.prop = function (obj, path) {
+        me.prop = function (obj, path, value) {
             /// <summary>Searches an object using a property path and returns the resulting value.</summary>
             /// <param type="Object" name="obj">The item to be searched along the path chain.</param>
             /// <param type="String(Optional)" name="path">String based path to the object property. Ex: { item: { type: 1 } } with 'item' it will find { type: 1 } with 'item.type' it will find 1.</param>
             /// <returns type="Value">Value of the resulting property chain, will be undefined if the value at the end isn't there, or if the chain is cut short.</returns>
-            if (me.is.set(path) && me.is.set(obj) && path != '') {
-                var current = obj,
-                    paths = path.split('.');
-                me.all(paths, function (p, i, e) {
-                    current = current[p];
-                    if (!me.is.set(current)) 
-                        e.stop = true;
-                });
-                return current;
-            } 
+            if(me.is.set(path) && me.is.set(obj) && path != '') {
+                if (me.is.set(value)) {
+                    var paths = path.split('.');
+                    if (paths.length > 0) {
+                        var fragment = paths.pop();
+                        me.all(paths, function (x) {
+                            if (!me.is.set(obj[x]))
+                                obj[x] = {};
+                            obj = obj[x];
+                        });
+                        obj[fragment] = value;
+                    }
+                } else {
+                    var current = obj,
+                        paths = path.split('.');
+                    me.all(paths, function (p, i, e) {
+                        current = current[p];
+                        if (!me.is.set(current)) 
+                            e.stop = true;
+                    });
+                    return current;
+                } 
+            }
             else 
                 return obj;
         };
@@ -855,6 +870,21 @@
                     return Math.floor(Math.random() * (max - min + 1)) + min;
                 }
                 return Math.random() * (max - min + 1) + min;
+            },
+            color: function(colors) {
+                if(me.is.array(colors)) {
+                    return colors[me.gen.number(colors.length) - 1];
+                } else {
+                    var letters = '0123456789ABCDEF';
+                    var color = '#';
+                    for (var i = 0; i < 6; i++ ) {
+                        color += letters[Math.floor(Math.random() * 16)];
+                    }
+                    return color;
+                }
+            },
+            date: function(start, end) {
+                return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()));
             }
         };
     };
